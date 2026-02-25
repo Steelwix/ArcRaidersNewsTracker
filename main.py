@@ -2,10 +2,14 @@ from playwright.sync_api import sync_playwright
 import requests
 import sys
 import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+article_count_path = os.path.join(BASE_DIR, "article_count.txt")
+last_article_path = os.path.join(BASE_DIR, "last_article.txt")
+webhook_path = os.path.join(BASE_DIR, "webhook.txt")
 
 try:
-    with open("webhook.txt", "r") as f:
+    with open(webhook_path, "r") as f:
         WEBHOOK_URL = f.read().strip()
 except FileNotFoundError:
     print("Webhook file missing")
@@ -33,37 +37,42 @@ with sync_playwright() as p:
         browser.close()
     
 try:
-    with open("article_count.txt", "r") as file:
+    with open(article_count_path, "r") as file:
         old_count = file.read()
 except FileNotFoundError:
     old_count = ""
+    print("error reading article_count")
 
-
+print(old_count)
+print(len(cards))
 # Comparaison
 if old_count == "" or old_count == len(cards):
+    print("old_count = "+ old_count)
     sys.exit()
     die()
 
-with open("article_count.txt", "w") as file:
+with open(article_count_path, "w") as file:
     file.write(str(len(cards)))
 
 try:
-    with open("last_article.txt", "r") as file:
+    with open(last_article_path, "r") as file:
         storedArticle = file.read()
 except FileNotFoundError:
     storedArticle = ""
+    print("error")
 
+print(storedArticle)
+print(title)
 if storedArticle == "" or storedArticle == title:
     sys.exit()
     die()
 
-with open("last_article.txt", "w") as file:
+with open(last_article_path, "w") as file:
     file.write(title)
 
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1470860272116830387/E1ZZDJB9dO5USxrdOdCYVBXHQZuA5pSoxUPtvEf3h3VJyFH-ZFm5QJDe1jkTpW5zWZlj"
 payload = {
-"content": "🚨 NEW ARC RAIDERS INFOS : "+ title + " https://arcraiders.com/fr" + href
+"content": "🚨 NEW ARC RAIDERS INFOS : "+ title + " https://arcraiders.com" + href
 }
 
 requests.post(WEBHOOK_URL, json=payload)
